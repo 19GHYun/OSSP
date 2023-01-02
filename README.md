@@ -1,5 +1,4 @@
 # Copyright
-
 Everything
 
 	Copyright (C) 2017 David Carpenter
