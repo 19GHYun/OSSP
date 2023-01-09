@@ -31,7 +31,8 @@ OS 빌드	19044.2364
 경험	Windows Feature Experience Pack 120.2212.4190.0
 
 
-
+# 
 
 Visual Studio Code v1.74
+
 Sourcetree V3.4.11
