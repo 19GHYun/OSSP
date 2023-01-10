@@ -26,7 +26,7 @@ OS 빌드	19044.2364
 경험	Windows Feature Experience Pack 120.2212.4190.0
 
 
-# Use Software
+# 사용한 소프트웨어
 
 Visual Studio Code v1.74
 
