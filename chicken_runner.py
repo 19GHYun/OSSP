@@ -1,6 +1,7 @@
 import pygame
 import os
 import json
+import time
 from datetime import datetime
 from random import randint
 from collections import deque
@@ -13,7 +14,7 @@ class ProgramCloseError(Exception):
 class Character:
     def __init__(self, image_path):
         # 캐릭터 설정
-        self.img_list = [pygame.image.load(os.path.join(image_path, f"character{i + 1}.png")) for i in range(2)]
+        self.img_list = [pygame.image.load(os.path.join(image_path, f"character{i + 1}.png")) for i in range(3)]
         self.size = self.img_list[0].get_rect().size
         self.current_img = None
         self.pos_x = None
@@ -24,6 +25,7 @@ class Character:
         self.__speed_weight = 1
         self.__speed = None
         self.moving = None
+        self.downing = None
 
     def Reset(self, character_pos_x, character_pos_y):
         self.current_img = self.img_list[0]
@@ -32,6 +34,7 @@ class Character:
 
         self.__speed = self.__initial_speed
         self.moving = False
+        self.downing = False
         
     def JumpAction(self):
         if (not self.moving):
@@ -44,6 +47,19 @@ class Character:
             self.current_img = self.img_list[0]
             self.moving = False
             self.__speed = self.__initial_speed
+    #숙이는 코드 구현중
+    def DownAction(self):
+        if(not self.downing):
+            self.current_img = self.img_list[0]
+            return
+
+        self.current_img = self.img_list[2]
+        
+        if (round(self.__speed, 1) <= -self.__initial_speed + self.__speed_weight):
+            self.current_img = self.img_list[0]
+            self.downing = False
+            self.__speed = self.__initial_speed
+        
 
 
 class Hurdle:
@@ -77,6 +93,9 @@ class Hurdle:
     def AddHurdle(self, score, screen_width):
         if (score <= 30):
             return
+        #스테이지가 넘어가는 동안엔 장애물이 나오지 않도록 함.
+        if (score >= 170 and score <= 230 ):
+            return 
         if (len(self.hurdle_queue) != 0 and self.hurdle_queue[-1]["pos_x"] > self.__target_point):
             return
 
@@ -252,10 +271,15 @@ class GameManager:
         # 폰트 설정
         self.__score_font = pygame.font.Font(self.__font_path, 35)
 
+        # 레벨 설정
+        self.__level = 0
+
         # 사운드 불러오기
         pygame.mixer.music.load(os.path.join(self.__sound_path, "RustyCourier.mp3"))
-        pygame.mixer.music.set_volume(0.1)
+        pygame.mixer.music.set_volume(0.05)
         self.__jump_sound = pygame.mixer.Sound(os.path.join(self.__sound_path, "sprites_jump.wav"))
+        self.__down_sound = pygame.mixer.Sound(os.path.join(self.__sound_path, "sprites_down.mp3"))
+        self.__down_sound.set_volume(0.1)
         self.__checkPoint_sound = pygame.mixer.Sound(os.path.join(self.__sound_path, "sprites_checkPoint.wav"))
         self.__checkPoint_sound.set_volume(0.3)
         self.__die_sound = pygame.mixer.Sound(os.path.join(self.__sound_path, "sprites_die.wav"))
@@ -300,7 +324,11 @@ class GameManager:
                     if event.key == pygame.K_SPACE and self.__character.moving == False:
                         self.__jump_sound.play()
                         self.__character.moving = True
-
+                    #아래키를 누르면 숙이게 하는 곳. 구현중
+                    if event.key == pygame.K_DOWN and self.__character.downing == False:
+                        self.__down_sound.play()
+                        self.__character.downing = True
+                    
             self.__Action()
             self.__CollisionCheck()
             self.__DrawObject()
@@ -350,7 +378,12 @@ class GameManager:
             with open(score_path, "r", encoding="UTF-8") as r:
                 self.__score_list = json.load(r)
             self.__high_score = max(self.__score_list.values())
-
+        #게임이 끝날 경우, 바꾸었던 설정을 초기설정으로 초기화.
+        pygame.mixer.music.load(os.path.join(self.__sound_path, "RustyCourier.mp3"))
+        pygame.mixer.music.set_volume(0.05)
+        self.__stage_img = pygame.image.load(os.path.join(self.__image_path, "stage.png"))
+        self.__background_img = pygame.image.load(os.path.join(self.__image_path, "background.png"))
+        
         self.__DrawObject()
 
     def __DrawObject(self):
@@ -386,9 +419,11 @@ class GameManager:
     def __Action(self):
         self.__SetScore()
         self.__character.JumpAction()
+        self.__character.DownAction()
         self.__hurdle.AddHurdle(self.__score, self.__screen_width)
         self.__hurdle.MoveHurdle()
         self.__MoveStage()
+        self.__NextStage()
 
     def __SetScore(self):
         self.__score += 0.2
@@ -421,6 +456,19 @@ class GameManager:
                 self.__twinkle_time = None
                 self.__running = False
                 break
+# 200점이 넘어갈 시 배경과 노래가 바뀐다.
+    def __NextStage(self):
+        if(self.__score > 200 and self.__level == 0):
+            self.__level = 1
+            self.__stage_img = pygame.image.load(os.path.join(self.__image_path, "stage2.png"))
+            pygame.mixer.music.load(os.path.join(self.__sound_path, "EverybodyBounce.mp3"))
+            pygame.mixer.music.play(start=0)
+            pygame.mixer.music.set_volume(0.08)
+            pygame.mixer.music.get_pos()
+            self.__background_img = pygame.image.load(os.path.join(self.__image_path, "background2.png"))
+
+
+
 
 
 #---------------------------
