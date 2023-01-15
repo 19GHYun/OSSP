@@ -41,6 +41,12 @@ https://ko.dll-files.com/libmpg123-0.dll.html 에서 LIBMPG123-0.DLL을 다운 �
 
 DLL 파일을 시스템 디렉토리 (C:\Windows\System32, C:\Windows\SysWOW64\의 64 비트)로 이동시킨다.
 
+이래도 안 될 경우
+
+https://learn.microsoft.com/ko-KR/cpp/windows/latest-supported-vc-redist?view=msvc-170
+
+에서 마이크로소프트 C++ 런타임 설치.
+
 ## import에서 에러가 발생 한 경우
 
 파이썬으로 실행 시 일부 모듈이 필요할 수 있다.
