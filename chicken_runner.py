@@ -492,6 +492,8 @@ class GameManager:
 
     def __CollisionCheck(self):
         for hurdle in self.__hurdle.propelly_queue:
+            if((hurdle["pos_x"] > 118) or (hurdle["pos_x"] < 90) ):
+                return
             character_rect = self.__character.current_img.get_rect()
             character_rect.top = self.__character.pos_y
             character_rect.left = self.__character.pos_x
@@ -506,6 +508,8 @@ class GameManager:
                 self.__running = False
                 break
         for hurdle in self.__hurdle.hurdle_queue:
+            if((hurdle["pos_x"] > 118) or (hurdle["pos_x"] < 90) ):
+                return
             character_rect = self.__character.current_img.get_rect()
             character_rect.top = self.__character.pos_y
             character_rect.left = self.__character.pos_x
