@@ -47,7 +47,7 @@ class Character:
             self.current_img = self.img_list[0]
             self.moving = False
             self.__speed = self.__initial_speed
-    #숙이는 코드 구현중
+    #숙이는 코드
     def DownAction(self):
         if(self.current_img == self.img_list[0]):
             self.current_img = self.img_list[2]
@@ -66,20 +66,29 @@ class Hurdle:
     # 장애물 설정
     def __init__(self, image_path, screen_width, screen_height, stage_height):
         self.hurdle_queue = deque()
+        self.propelly_queue = deque()
         self.__img_list = [pygame.image.load(os.path.join(image_path, f"hurdle{i + 1}.png")) for i in range(4)]
         self.__size_list = [t.get_rect().size for t in self.__img_list]
         self.__pos_x_list = [screen_width for i in range(len(self.__img_list))]
         self.__pos_y_list = [screen_height - stage_height - t[1] for t in self.__size_list]
 
+        self.__propelly_img_list = [pygame.image.load(os.path.join(image_path, f"propelly{i + 1}.png")) for i in range(8)]
+        self.__propelly_size_list = [t.get_rect().size for t in self.__propelly_img_list]
+        self.__propelly_pos_x_list = [screen_width for i in range(len(self.__propelly_img_list))]
+        self.__propelly_pos_y_list = [screen_height - stage_height - t[1] for t in self.__propelly_size_list]
+
         self.__initial_speed = 8
         self.__speed_weight = 0.3
         self.__target_point = None
+        self.__propelly_target_point = None
         self.speed = None
 
     def Reset(self, screen_width):
         self.__target_point = screen_width / 2
+        self.__target_point = screen_width / 2
         self.speed = self.__initial_speed
         self.hurdle_queue.clear()
+        self.propelly_queue.clear()
 
     def SpeedUp(self):
         self.speed += self.__speed_weight
@@ -89,6 +98,10 @@ class Hurdle:
             hurdle["pos_x"] -= self.speed
         if (len(self.hurdle_queue) != 0 and self.hurdle_queue[0]["pos_x"] <= -self.hurdle_queue[0]["size"][0]):
             self.hurdle_queue.popleft()
+        for hurdle in list(self.propelly_queue):
+            hurdle["pos_x"] -=self.speed
+        if (len(self.propelly_queue) != 0 and self.propelly_queue[0]["pos_x"] <= -self.propelly_queue[0]["size"][0]):
+            self.propelly_queue.popleft()
 
     def AddJumpHurdle(self, score, screen_width):
         if (score <= 30):
@@ -108,10 +121,44 @@ class Hurdle:
             "pos_y" : self.__pos_y_list[i]
         })
 
-        self.__target_point = randint(
-            -self.hurdle_queue[0]["size"][0], 
-            max([-self.hurdle_queue[0]["size"][0] + 1, int(screen_width / 2 + 180 - (self.speed - 8) * 40)])
+        if(score < 200):
+            self.__target_point = randint(
+                -self.hurdle_queue[0]["size"][0], 
+                max([-self.hurdle_queue[0]["size"][0] + 1, int(screen_width / 2 + 180 - (self.speed - 8) * 40)])
+            )
+        else:
+            self.__target_point = randint(
+                -self.hurdle_queue[0]["size"][0], 
+                max([-self.hurdle_queue[0]["size"][0] + 1, int(screen_width / 2 + 60 - (self.speed - 8) * 40)])
+            )
+
+
+
+    def AddDownHurdle(self, score, screen_width):
+        if (score <= 170):
+            return
+        #스테이지가 넘어가는 동안엔 장애물이 나오지 않도록 함.
+        if (score >= 170 and score <= 270 ):
+            return 
+        if (len(self.propelly_queue) != 0 and self.propelly_queue[-1]["pos_x"] > self.__propelly_target_point):
+            return
+
+        propelly_above = randint(0, 80)
+
+        i = randint(0, len(self.__img_list) - 1)
+
+        self.propelly_queue.append({
+            "img" : self.__propelly_img_list[i],
+            "size" : self.__propelly_size_list[i], 
+            "pos_x" : self.__propelly_pos_x_list[i],
+            "pos_y" : self.__propelly_pos_y_list[i] - propelly_above
+        })
+
+        self.__propelly_target_point = randint(
+            -self.propelly_queue[0]["size"][0], 
+            max([-self.propelly_queue[0]["size"][0] + 1, int(screen_width / 2 + 60 - (self.speed - 8) * 40)])
         )
+
 
 
 class RankingWindow:
@@ -276,7 +323,7 @@ class GameManager:
 
         # 사운드 불러오기
         pygame.mixer.music.load(os.path.join(self.__sound_path, "RustyCourier.mp3"))
-        pygame.mixer.music.set_volume(0.05)
+        pygame.mixer.music.set_volume(0.1)
         self.__jump_sound = pygame.mixer.Sound(os.path.join(self.__sound_path, "sprites_jump.wav"))
         self.__down_sound = pygame.mixer.Sound(os.path.join(self.__sound_path, "sprites_down.mp3"))
         self.__down_sound.set_volume(0.1)
@@ -380,7 +427,7 @@ class GameManager:
             self.__high_score = max(self.__score_list.values())
         #게임이 끝날 경우, 바꾸었던 설정을 초기설정으로 초기화.
         pygame.mixer.music.load(os.path.join(self.__sound_path, "RustyCourier.mp3"))
-        pygame.mixer.music.set_volume(0.05)
+        pygame.mixer.music.set_volume(0.1)
         self.__stage_img = pygame.image.load(os.path.join(self.__image_path, "stage.png"))
         self.__background_img = pygame.image.load(os.path.join(self.__image_path, "background.png"))
         
@@ -391,6 +438,8 @@ class GameManager:
         self.__screen.blit(self.__stage_img, (self.__stage_pos_x, self.__screen_height - self.__stage_size[1]))
 
         for hurdle in self.__hurdle.hurdle_queue:
+            self.__screen.blit(hurdle["img"], (hurdle["pos_x"], hurdle["pos_y"]))
+        for hurdle in self.__hurdle.propelly_queue:
             self.__screen.blit(hurdle["img"], (hurdle["pos_x"], hurdle["pos_y"]))
 
         self.__screen.blit(self.__character.current_img, (self.__character.pos_x, self.__character.pos_y))
@@ -420,6 +469,7 @@ class GameManager:
         self.__SetScore()
         self.__character.JumpAction()
         self.__hurdle.AddJumpHurdle(self.__score, self.__screen_width)
+        self.__hurdle.AddDownHurdle(self.__score, self.__screen_width)
         self.__hurdle.MoveHurdle()
         self.__MoveStage()
         self.__NextStage()
@@ -441,6 +491,20 @@ class GameManager:
             self.__stage_pos_x = -(-117 - self.__stage_pos_x)
 
     def __CollisionCheck(self):
+        for hurdle in self.__hurdle.propelly_queue:
+            character_rect = self.__character.current_img.get_rect()
+            character_rect.top = self.__character.pos_y
+            character_rect.left = self.__character.pos_x
+
+            hurdle_rect = hurdle["img"].get_rect()
+            hurdle_rect.top = hurdle["pos_y"]
+            hurdle_rect.left = hurdle["pos_x"]
+
+            if (character_rect.colliderect(hurdle_rect)):
+                self.__die_sound.play()
+                self.__twinkle_time = None
+                self.__running = False
+                break
         for hurdle in self.__hurdle.hurdle_queue:
             character_rect = self.__character.current_img.get_rect()
             character_rect.top = self.__character.pos_y
