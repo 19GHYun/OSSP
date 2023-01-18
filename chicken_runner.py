@@ -107,7 +107,7 @@ class Hurdle:
         if (score <= 30):
             return
         #스테이지가 넘어가는 동안엔 장애물이 나오지 않도록 함.
-        if (score >= 170 and score <= 230 ):
+        if (score >= 170 and score <= 270 ):
             return 
         if (len(self.hurdle_queue) != 0 and self.hurdle_queue[-1]["pos_x"] > self.__target_point):
             return
@@ -129,7 +129,7 @@ class Hurdle:
         else:
             self.__target_point = randint(
                 -self.hurdle_queue[0]["size"][0], 
-                max([-self.hurdle_queue[0]["size"][0] + 1, int(screen_width / 2 + 60 - (self.speed - 8) * 40)])
+                max([-self.hurdle_queue[0]["size"][0] + 1, int(screen_width / 2 + 30 - (self.speed - 8) * 40)])
             )
 
 
@@ -138,12 +138,12 @@ class Hurdle:
         if (score <= 170):
             return
         #스테이지가 넘어가는 동안엔 장애물이 나오지 않도록 함.
-        if (score >= 170 and score <= 270 ):
+        if (score >= 170 and score <= 250 ):
             return 
         if (len(self.propelly_queue) != 0 and self.propelly_queue[-1]["pos_x"] > self.__propelly_target_point):
             return
 
-        propelly_above = randint(0, 80)
+        propelly_above = randint(0, 120)
 
         i = randint(0, len(self.__img_list) - 1)
 
@@ -156,7 +156,7 @@ class Hurdle:
 
         self.__propelly_target_point = randint(
             -self.propelly_queue[0]["size"][0], 
-            max([-self.propelly_queue[0]["size"][0] + 1, int(screen_width / 2 + 60 - (self.speed - 8) * 40)])
+            max([-self.propelly_queue[0]["size"][0] + 1, int(screen_width / 2 + 30 - (self.speed - 8) * 40)])
         )
 
 
