@@ -25,7 +25,6 @@ class Character:
         self.__speed_weight = 1
         self.__speed = None
         self.moving = None
-        self.downing = None
 
     def Reset(self, character_pos_x, character_pos_y):
         self.current_img = self.img_list[0]
@@ -34,7 +33,6 @@ class Character:
 
         self.__speed = self.__initial_speed
         self.moving = False
-        self.downing = False
         
     def JumpAction(self):
         if (not self.moving):
@@ -49,16 +47,16 @@ class Character:
             self.__speed = self.__initial_speed
     #숙이는 코드 구현중
     def DownAction(self):
-        if(not self.downing):
+        if(self.current_img == self.img_list[0]):
+            self.current_img = self.img_list[2]
+            self.pos_y += 15
+            return
+        elif(self.current_img == self.img_list[2]):
             self.current_img = self.img_list[0]
+            self.pos_y -= 15
             return
 
-        self.current_img = self.img_list[2]
         
-        if (round(self.__speed, 1) <= -self.__initial_speed + self.__speed_weight):
-            self.current_img = self.img_list[0]
-            self.downing = False
-            self.__speed = self.__initial_speed
         
 
 
@@ -325,9 +323,9 @@ class GameManager:
                         self.__jump_sound.play()
                         self.__character.moving = True
                     #아래키를 누르면 숙이게 하는 곳. 구현중
-                    if event.key == pygame.K_DOWN and self.__character.downing == False:
+                    if event.key == pygame.K_DOWN:
+                        self.__character.DownAction()
                         self.__down_sound.play()
-                        self.__character.downing = True
                     
             self.__Action()
             self.__CollisionCheck()
@@ -419,7 +417,6 @@ class GameManager:
     def __Action(self):
         self.__SetScore()
         self.__character.JumpAction()
-        self.__character.DownAction()
         self.__hurdle.AddHurdle(self.__score, self.__screen_width)
         self.__hurdle.MoveHurdle()
         self.__MoveStage()
