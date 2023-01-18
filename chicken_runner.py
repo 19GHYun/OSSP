@@ -371,7 +371,7 @@ class GameManager:
                     if event.key == pygame.K_SPACE and self.__character.moving == False:
                         self.__jump_sound.play()
                         self.__character.moving = True
-                    #아래키를 누르면 숙이게 하는 곳. 구현중
+                    #아래키를 누르면 숙이게 하는 곳.
                     if event.key == pygame.K_DOWN:
                         self.__character.DownAction()
                         self.__down_sound.play()
