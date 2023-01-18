@@ -52,3 +52,9 @@ https://learn.microsoft.com/ko-KR/cpp/windows/latest-supported-vc-redist?view=ms
 파이썬으로 실행 시 일부 모듈이 필요할 수 있다.
 
 명령 프롬포트에서 pip install pygame.. 등으로 설치를 해야 한다.
+
+# 출처
+
+공중에 떠다니는 장애물, 바닥 타일, 1스테이지 배경 - https://maplestory.nexon.com/Home/Main
+
+2스테이지 배경 - https://wallpapercave.com/moviestarplanet-wallpapers
