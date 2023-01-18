@@ -37,6 +37,8 @@ class Character:
     def JumpAction(self):
         if (not self.moving):
             return
+        if(self.current_img == self.img_list[2]):
+            self.pos_y -= 15
         self.current_img = self.img_list[1]
         self.__speed -= self.__speed_weight
         self.pos_y -= self.__speed
@@ -88,7 +90,7 @@ class Hurdle:
         if (len(self.hurdle_queue) != 0 and self.hurdle_queue[0]["pos_x"] <= -self.hurdle_queue[0]["size"][0]):
             self.hurdle_queue.popleft()
 
-    def AddHurdle(self, score, screen_width):
+    def AddJumpHurdle(self, score, screen_width):
         if (score <= 30):
             return
         #스테이지가 넘어가는 동안엔 장애물이 나오지 않도록 함.
@@ -417,7 +419,7 @@ class GameManager:
     def __Action(self):
         self.__SetScore()
         self.__character.JumpAction()
-        self.__hurdle.AddHurdle(self.__score, self.__screen_width)
+        self.__hurdle.AddJumpHurdle(self.__score, self.__screen_width)
         self.__hurdle.MoveHurdle()
         self.__MoveStage()
         self.__NextStage()
